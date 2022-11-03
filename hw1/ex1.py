@@ -28,8 +28,8 @@ args = parser.parse_args()
 def callback(indata, frames, call_back, status):
 
     audio = get_audio_from_numpy(indata)
-    store_audio = is_silence(indata = audio, downsampling_rate= SAMPLING_RATE, frame_length_in_s=0.001, dbFSthres=-80, duration_thres=0.0003)
-    store_audio = 1
+    store_audio = is_silence(indata = audio, downsampling_rate= SAMPLING_RATE, frame_length_in_s=0.0001, dbFSthres=-90, duration_thres=0.02)
+    
     if store_audio:
         timestamp = time()
         file_path = f'{OUTPUT_FOLDER}/{timestamp}.wav'

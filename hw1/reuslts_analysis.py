@@ -6,23 +6,28 @@ from altair_saver import save
 
 
 
-data = pd.read_csv('hyperparameters_tuning.txt')
+data = pd.read_csv('hyperparameters_tuning (1).txt')
 print(list(data.columns[:-2]))
 
+good_contraints = data[(data['Accuracy'] >= 0.98) & (data['Avg Latency'] <= 9.0)]
 
 accuracy_vs_latency = alt.Chart(data).mark_point().encode(
-    alt.X('Accuracy', title='Accuracy (%)', type = 'quantitative', scale = alt.Scale(domain = (0.87,1.0))),
-    alt.Y('Avg Latency', title = 'Avg Latency (ms)', type = 'quantitative', scale = alt.Scale(domain = (9.0,14.0))),
-    tooltip=list(data.columns[:-2])
+    alt.X('Accuracy', title='Accuracy (%)', type = 'quantitative', scale = alt.Scale(zero = False)),
+    alt.Y('Avg Latency', title = 'Avg Latency (ms)', type = 'quantitative', scale = alt.Scale(zero = False)),
+    tooltip=list(data.columns)
+).properties(
+    width = 200,
+    height = 200
 )
 
 accuracy_vs_latency =  accuracy_vs_latency.properties(
     title = 'Accuracy vs Average Latency'
 )
 
-#accuracy_vs_latency.interactive().show()
+accuracy_vs_latency.interactive().show()
 
-
+"""
+"""
 
 rows = []
 columns = []
