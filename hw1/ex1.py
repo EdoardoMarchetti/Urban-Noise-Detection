@@ -1,4 +1,4 @@
-import argparse as ap 
+import argparse as ap
 import sounddevice as sd
 import os
 import tensorflow as tf
@@ -29,7 +29,7 @@ def callback(indata, frames, call_back, status):
 
     audio = get_audio_from_numpy(indata)
     store_audio = is_silence(indata = audio, downsampling_rate= SAMPLING_RATE, frame_length_in_s=0.001, dbFSthres=-80, duration_thres=0.0003)
-    
+    store_audio = 1
     if store_audio:
         timestamp = time()
         file_path = f'{OUTPUT_FOLDER}/{timestamp}.wav'
@@ -51,6 +51,7 @@ def get_audio_from_numpy(indata):
 # Gets an spectrogram that takes time x amplitude to frequency x magnitude
 def get_spectrogram(indata, downsampling_rate, frame_length_in_s, frame_step_in_s):
     audio = get_audio_from_numpy(indata)
+
     sampling_rate_float32 = tf.cast(downsampling_rate, tf.float32)
     # Create the frame length and step for the stft (Short-Time Fourier Transform)
     frame_length = int(frame_length_in_s * sampling_rate_float32)
@@ -75,11 +76,14 @@ def is_silence(indata, downsampling_rate, frame_length_in_s, dbFSthres, duration
         frame_length_in_s,
         frame_length_in_s
     )
+
     dbFS = 20 * tf.math.log(spectrogram + 1.e-6)
     energy = tf.math.reduce_mean(dbFS, axis=1)
     non_silence = energy > dbFSthres
     non_silence_frames = tf.math.reduce_sum(tf.cast(non_silence, tf.float32))
     non_silence_duration = (non_silence_frames + 1) * frame_length_in_s
+
+    print('Non_silence_duration: ', non_silence_duration, " duration_thres: ", duration_thres)
 
     if non_silence_duration > duration_thres:
         return 0
