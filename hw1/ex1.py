@@ -1,8 +1,11 @@
 import argparse as ap
+import pandas as pd
 import sounddevice as sd
 import os
 import tensorflow as tf
 import tensorflow_io as tfio
+import numpy as np
+import altair as alt
 
 from scipy.io.wavfile import write
 from time import sleep, time
@@ -27,10 +30,10 @@ args = parser.parse_args()
 #-----------------------UTILITY FUNCTIONS---------------------------------
 def callback(indata, frames, call_back, status):
 
-    audio = get_audio_from_numpy(indata)
-    store_audio = is_silence(indata = audio, downsampling_rate= SAMPLING_RATE, frame_length_in_s=0.0001, dbFSthres=-90, duration_thres=0.02)
+
+    store_audio = is_silence(indata = indata, downsampling_rate= SAMPLING_RATE, frame_length_in_s=0.0005, dbFSthres=-90, duration_thres=0.02)
     
-    if store_audio:
+    if not store_audio:
         timestamp = time()
         file_path = f'{OUTPUT_FOLDER}/{timestamp}.wav'
         print(file_path)
@@ -50,23 +53,22 @@ def get_audio_from_numpy(indata):
 
 # Gets an spectrogram that takes time x amplitude to frequency x magnitude
 def get_spectrogram(indata, downsampling_rate, frame_length_in_s, frame_step_in_s):
-    audio = get_audio_from_numpy(indata)
+    # TODO: Write your code here
+    audio_padded = get_audio_from_numpy(indata)
 
     sampling_rate_float32 = tf.cast(downsampling_rate, tf.float32)
-    # Create the frame length and step for the stft (Short-Time Fourier Transform)
     frame_length = int(frame_length_in_s * sampling_rate_float32)
     frame_step = int(frame_step_in_s * sampling_rate_float32)
-    # Compute the stft
-    stft = tf.signal.stft(
-        audio,
-        frame_length = frame_length,
-        frame_step = frame_step,
-        fft_length = frame_length
-    )
-    #Get the spectogram
-    spectogram = tf.abs(stft)
 
-    return spectogram
+    spectrogram = stft = tf.signal.stft(
+        audio_padded, 
+        frame_length=frame_length,
+        frame_step=frame_step,
+        fft_length=frame_length
+    )
+    spectrogram = tf.abs(stft)
+
+    return spectrogram
 
 def is_silence(indata, downsampling_rate, frame_length_in_s, dbFSthres, duration_thres):
 
@@ -78,9 +80,28 @@ def is_silence(indata, downsampling_rate, frame_length_in_s, dbFSthres, duration
     )
 
     dbFS = 20 * tf.math.log(spectrogram + 1.e-6)
+    print('dbfs: ', dbFS)
     energy = tf.math.reduce_mean(dbFS, axis=1)
+    print('Energy: ', energy)
+
+    plot_data = {
+        'Time': np.arange(0, 1, frame_length_in_s),
+        'Energy': energy,
+    }
+    df= pd.DataFrame(plot_data)
+    print(df)
+
+    chart= alt.Chart(df).mark_bar().encode(
+        x = 'Time:Q',
+        y = 'Energy:Q'
+    )
+    
+    chart.interactive().show()
+
     non_silence = energy > dbFSthres
+    print('Mask: ', non_silence)
     non_silence_frames = tf.math.reduce_sum(tf.cast(non_silence, tf.float32))
+    print('Non silence frames: ', non_silence_frames)
     non_silence_duration = (non_silence_frames + 1) * frame_length_in_s
 
     print('Non_silence_duration: ', non_silence_duration, " duration_thres: ", duration_thres)
@@ -94,11 +115,11 @@ def is_silence(indata, downsampling_rate, frame_length_in_s, dbFSthres, duration
 print('Start Recording...')
 
 with sd.InputStream(device=args.device,                   #device = id of the input device
-               channels= 1,         #channels = number of microphones used at the same time
-               samplerate= SAMPLING_RATE,    #samplerate = number of samples per second; the higher the higher the resolution
-               dtype= 'int16',          #dtype = The sample format of the numpy.ndarray provided to the stream callback, read() or write().
-               callback= callback,              #callback = indicate the calback function name  
-               blocksize= SAMPLING_RATE):    #blocksize = every how many samples the callback is invoked 
+               channels= 1,                               #channels = number of microphones used at the same time
+               samplerate= SAMPLING_RATE,                 #samplerate = number of samples per second; the higher the higher the resolution
+               dtype= 'int16',                            #dtype = The sample format of the numpy.ndarray provided to the stream callback, read() or write().
+               callback= callback,                        #callback = indicate the calback function name  
+               blocksize= SAMPLING_RATE):                 #blocksize = every how many samples the callback is invoked 
                           
     while True: 
 
