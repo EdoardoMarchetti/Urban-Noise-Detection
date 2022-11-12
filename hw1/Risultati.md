@@ -6,10 +6,10 @@
 
 Migliori parametri:
 sample_rate 16000,
-dbTresh: -80,
-durTresh: 0.0003,
-Frame length (s): 0.001
+dbTresh: -90,
+durTresh: 0.02,
+Frame length (s): 0.0001
 
 Risultati:
-Accuracy: 98.67%
-Avg Latency: 8.6ms
+Accuracy: 98.11%
+Avg Latency: 8.95ms

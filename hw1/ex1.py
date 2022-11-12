@@ -3,6 +3,9 @@ import sounddevice as sd
 import os
 import tensorflow as tf
 import tensorflow_io as tfio
+import numpy as np
+import altair as alt
+import pandas as pd
 
 from scipy.io.wavfile import write
 from time import sleep, time
@@ -27,8 +30,8 @@ args = parser.parse_args()
 #-----------------------UTILITY FUNCTIONS---------------------------------
 def callback(indata, frames, call_back, status):
 
-    audio = get_audio_from_numpy(indata)
-    store_audio = is_silence(indata = audio, downsampling_rate= SAMPLING_RATE, frame_length_in_s=0.0001, dbFSthres=-90, duration_thres=0.02)
+    
+    store_audio = is_silence(indata = indata, downsampling_rate= SAMPLING_RATE, frame_length_in_s=0.0001, dbFSthres=-90, duration_thres=0.02)
     
     if store_audio:
         timestamp = time()
@@ -41,8 +44,8 @@ def callback(indata, frames, call_back, status):
 
 
 def get_audio_from_numpy(indata):
-    indata = tf.convert_to_tensor(indata, dtype = tf.float32)   
-    indata = (indata+32768) / (32767+32768)
+    indata = tf.convert_to_tensor(indata, dtype=tf.float32)
+    indata = 2 * ((indata + 32768) / (32767 + 32768)) - 1  # CORRECT normalization between -1 and 1
     indata = tf.squeeze(indata)
 
     return indata
@@ -79,6 +82,25 @@ def is_silence(indata, downsampling_rate, frame_length_in_s, dbFSthres, duration
 
     dbFS = 20 * tf.math.log(spectrogram + 1.e-6)
     energy = tf.math.reduce_mean(dbFS, axis=1)
+
+    print('Energy len: ', len(energy))
+    print('Time len: ', len(np.arange(0,1,frame_length_in_s)))
+
+    plot_data = {
+        'Time': np.arange(0, 1, frame_length_in_s),
+        'Energy': energy,
+    }
+    df= pd.DataFrame(plot_data)
+    print(df)
+
+    chart= alt.Chart(df).mark_bar().encode(
+        x = 'Time:Q',
+        y = 'Energy:Q'
+    )
+    
+    chart.interactive().show()
+
+
     non_silence = energy > dbFSthres
     non_silence_frames = tf.math.reduce_sum(tf.cast(non_silence, tf.float32))
     non_silence_duration = (non_silence_frames + 1) * frame_length_in_s
