@@ -18,6 +18,7 @@ args = parser.parse_args()
 
 
 DELTA_t = 1 #every DELTA_t seconds a record is stored
+RETENTION_TIME_IN_MS_ONE_MB = 524288*1e3 
 
 #Get redis_client
 redis_client = redis.Redis(host= args.host, \
@@ -39,19 +40,19 @@ mac_power_in_s = f'{mac_address}:plugged_secods'
 
 
 #Create the timeseries
-bucket_size_msec = 3000 #24 hours in ms
+day_in_msec = 24*60*60*1e3 #24 hours in ms
 try:
 
     redis_client.ts().create(mac_battery, uncompressed = False, chunk_size=128)                                                                                        #timeseries for battery level \in [0,100]
     redis_client.ts().create(mac_power, uncompressed = False, chunk_size=128)                                                                                          #timeseries to check if battery is plugged \in {0,1}
     redis_client.ts().create(mac_power_in_s, uncompressed = False, chunk_size=128)                                                                                     #timeseires that automatically stores how many seconds the power have been plugged in the last 24 hours 
  
-    redis_client.ts().alter(mac_battery,retention_msec=bucket_size_msec*100)
-    redis_client.ts().alter(mac_power,retention_msec=bucket_size_msec*100)
-    redis_client.ts().alter(mac_power_in_s, retention_msec=bucket_size_msec*100)
+    redis_client.ts().alter(mac_battery, retention_msec= RETENTION_TIME_IN_MS_ONE_MB*5)
+    redis_client.ts().alter(mac_power, retention_msec= RETENTION_TIME_IN_MS_ONE_MB*5)
+    redis_client.ts().alter(mac_power_in_s, retention_msec= RETENTION_TIME_IN_MS_ONE_MB)
 
     #Create the rule to sum the data
-    redis_client.ts().createrule(mac_power, mac_power_in_s, aggregation_type='sum', bucket_size_msec=bucket_size_msec)    
+    redis_client.ts().createrule(mac_power, mac_power_in_s, aggregation_type='sum', bucket_size_msec=day_in_msec)    
 except redis.ResponseError:
     pass
 

@@ -58,3 +58,10 @@ Cosa si ottiene sull'asse delle x se applichiamo l'inversa della trasformata di 
 
 1st Rhamonic? Quefrency associata alla frequenza portante
 
+
+## EX2
+
+redis_record_dimension = 16 bytes
+compressed_redis_record_dimension = 16*0.1 = 1.6 bytes (the compression on average saves 90% of the memory) -> 2 bytes
+mega_byte = 1024**2 bytes 
+records_in_a_byte = mega_byte/compressed_redis_record_dimension
