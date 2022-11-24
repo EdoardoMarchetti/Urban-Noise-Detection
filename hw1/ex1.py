@@ -104,7 +104,12 @@ with sd.InputStream(device=args.device,                   #device = id of the in
                callback= callback,                        #callback = indicate the calback function name
                blocksize= SAMPLING_RATE):                 #blocksize = every how many samples the callback is invoked
 
+    if not os.path.exists(OUTPUT_FOLDER):
+        os.mkdir(OUTPUT_FOLDER)
+        
     while True:
+
+
 
         key = input()
         if key in ['Q', 'q']:

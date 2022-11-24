@@ -10,10 +10,10 @@ import numpy as np
 
 parser = ap.ArgumentParser()
 
-parser.add_argument('--host', help='the Redis Cloud host.', type = str, default= 'redis-19577.c81.us-east-1-2.ec2.cloud.redislabs.com')
-parser.add_argument('--port', help='the Redis Cloud port.', type = int, default = 19577)
-parser.add_argument('--user', help='the Redis Cloud username.', type = str, default = 'default')
-parser.add_argument('--password', help='the Redis Cloud password.', type = str, default = 'so7BaeUMztM1pEpKusnIWrk9PN0nSVdm')
+parser.add_argument('--host', help='the Redis Cloud host.', type = str, required=True)
+parser.add_argument('--port', help='the Redis Cloud port.', type = int, required=True)
+parser.add_argument('--user', help='the Redis Cloud username.', type = str, required=True)
+parser.add_argument('--password', help='the Redis Cloud password.', type = str, required=True)
 
 args = parser.parse_args()
 
@@ -48,9 +48,9 @@ mac_power_in_s = f'{mac_address}:plugged_secods'
 day_in_msec = int(24*60*60*1e3) #24 hours in ms
 try:
 
-    redis_client.ts().create(mac_battery, uncompressed = False, chunk_size=128)                                                                                        #timeseries for battery level \in [0,100]
-    redis_client.ts().create(mac_power, uncompressed = False, chunk_size=128)                                                                                          #timeseries to check if battery is plugged \in {0,1}
-    redis_client.ts().create(mac_power_in_s, uncompressed = False, chunk_size=128)                                                                                     #timeseires that automatically stores how many seconds the power have been plugged in the last 24 hours 
+    redis_client.ts().create(mac_battery, uncompressed = False, chunk_size=128)                             #timeseries for battery level \in [0,100]
+    redis_client.ts().create(mac_power, uncompressed = False, chunk_size=128)                               #timeseries to check if battery is plugged \in {0,1}
+    redis_client.ts().create(mac_power_in_s, uncompressed = False, chunk_size=128)                          #timeseires that automatically stores how many seconds the power have been plugged in the last 24 hours 
  
     redis_client.ts().alter(mac_battery, retention_msec= NO_AGGREGATE_RET_TIME*5)
     redis_client.ts().alter(mac_power, retention_msec= NO_AGGREGATE_RET_TIME*5)
