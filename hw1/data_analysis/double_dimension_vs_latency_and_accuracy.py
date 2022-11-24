@@ -55,11 +55,17 @@ latency = latency.properties(
     )
 )
 
+latency_point = latency.mark_point()
+
+
 rule = alt.Chart().mark_rule().encode(y = alt.datum(9))
 
-latency = (rule + latency.mark_line() + latency.mark_point())
+latency = (rule + latency.mark_line() + latency_point)
 
 
+#accuracy.interactive().show()
+
+#latency.interactive().show()
 
 final_chart = accuracy | latency
 final_chart.show()
