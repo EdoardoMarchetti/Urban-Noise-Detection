@@ -1,11 +1,9 @@
 from time import sleep, time
 from datetime import datetime
-
 import argparse as ap
 import psutil as ps
 import uuid
 import redis
-import numpy as np
 
 
 parser = ap.ArgumentParser()
@@ -63,16 +61,12 @@ except redis.ResponseError:
 
 
 i = 0
-minutes = 0
-record_per_minute = list()
-start = 0
-timestamp = 0
+
 
 while True:
 
         #Prepare the timestamp
         timestamp = time()
-        start = timestamp if start == 0 else start
         timestamp_in_ms = int(timestamp*1000)
         formatted_datetime = datetime.fromtimestamp(timestamp)
 

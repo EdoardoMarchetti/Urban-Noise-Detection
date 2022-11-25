@@ -1,12 +1,9 @@
 import argparse as ap
-import pandas as pd
 import sounddevice as sd
 import os
 import tensorflow as tf
 import tensorflow_io as tfio
-import numpy as np
-import altair as alt
-import pandas as pd
+
 
 from scipy.io.wavfile import write
 from time import sleep, time
@@ -47,7 +44,7 @@ def callback(indata, frames, call_back, status):
 
 def get_audio_from_numpy(indata):
     indata = tf.convert_to_tensor(indata, dtype=tf.float32)
-    indata = 2 * ((indata + 32768) / (32767 + 32768)) - 1  # CORRECT normalization between -1 and 1
+    indata = 2 * ((indata + 32768) / (32767 + 32768)) - 1  
     indata = tf.squeeze(indata)
 
     return indata
@@ -55,7 +52,6 @@ def get_audio_from_numpy(indata):
 
 # Gets an spectrogram that takes time x amplitude to frequency x magnitude
 def get_spectrogram(indata, downsampling_rate, frame_length_in_s, frame_step_in_s):
-    # TODO: Write your code here
     audio_padded = get_audio_from_numpy(indata)
 
     sampling_rate_float32 = tf.cast(downsampling_rate, tf.float32)
@@ -97,12 +93,12 @@ def is_silence(indata, downsampling_rate, frame_length_in_s, dbFSthres, duration
 
 print('Start Recording...')
 
-with sd.InputStream(device=args.device,                   #device = id of the input device
-               channels= 1,                               #channels = number of microphones used at the same time
-               samplerate= SAMPLING_RATE,                 #samplerate = number of samples per second; the higher the higher the resolution
-               dtype= 'int16',                            #dtype = The sample format of the numpy.ndarray provided to the stream callback, read() or write().
-               callback= callback,                        #callback = indicate the calback function name
-               blocksize= SAMPLING_RATE):                 #blocksize = every how many samples the callback is invoked
+with sd.InputStream(device=args.device,                  
+               channels= 1,                              
+               samplerate= SAMPLING_RATE,                 
+               dtype= 'int16',                            
+               callback= callback,                        
+               blocksize= SAMPLING_RATE):                 
 
     if not os.path.exists(OUTPUT_FOLDER):
         os.mkdir(OUTPUT_FOLDER)
