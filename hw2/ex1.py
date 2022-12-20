@@ -222,7 +222,7 @@ except redis.ResponseError:
     pass
 
 # Obtain the model to integrate
-MODEL_NAME = 'best_model'
+MODEL_NAME = 'model08'
 
 print('Unzipping the model')
 zipped_model_path = os.path.join('.', f'{MODEL_NAME}.tflite.zip')
