@@ -7,10 +7,6 @@ import json
 
 parser = ArgumentParser()
 
-parser.add_argument('--how_long',
-help='Duration of time interval in seconds in which the battery status is observed',
-type=float,
-default=100)
 
 parser.add_argument('--topic',
 help='Message topic',
@@ -45,9 +41,8 @@ client.connect(
     port=1883
 )
 
-
-for i in range(args.how_long): 
-    print('Sending message....')
+print('Sending......Type Ctrl+C to stop')
+while True: 
     #Get the mac address
     mac_address = hex(uuid.getnode())
     #Get the data
