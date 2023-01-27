@@ -1,0 +1,13 @@
+@host = http://localhost:8080
+
+###
+GET {{host}}/devices
+
+###
+GET {{host}}/online
+
+###
+GET {{host}}/device/0x17a9ed6a3019?from=0&to=1673710261095
+
+###
+DELETE {{host}}/device/0x17a9ed6a3019
