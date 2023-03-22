@@ -22,11 +22,11 @@ LABELS = ['car','bus','chatter','motorcycle','other','truck']
 #------------------------PARSING------------------------------------------
 parser = ap.ArgumentParser()
 
-parser.add_argument('--device', type = int, required=True)
-parser.add_argument('--host', help='the Redis Cloud host.', type = str, required=True)
-parser.add_argument('--port', help='the Redis Cloud port.', type = int, required=True)
-parser.add_argument('--user', help='the Redis Cloud username.', type = str, required=True)
-parser.add_argument('--password', help='the Redis Cloud password.', type = str, required=True)
+parser.add_argument('--device', type = int, default=0, required=False)#True)
+parser.add_argument('--host', help='the Redis Cloud host.', type = str, required=False)#True)
+parser.add_argument('--port', help='the Redis Cloud port.', type = int, required=False)#True)
+parser.add_argument('--user', help='the Redis Cloud username.', type = str, required=False)#True)
+parser.add_argument('--password', help='the Redis Cloud password.', type = str, required=False)#True)
 
 args = parser.parse_args()
 
@@ -37,11 +37,12 @@ DTYPE = 'int16'
 AUDIO_FILE_LENGTH_IN_S = 1
 
 # Redis parameters
+'''
 REDIS_HOST = args.host
 REDIS_PORT = args.port
 REDIS_USER = args.user
 REDIS_PASSWORD = args.password
-
+'''
 # Parameters for is_silence function
 IS_SILENCE_ARGS = {
     'downsampling_rate' : 16000,
@@ -188,6 +189,8 @@ def callback(indata, frames, call_back, status):
             store_information = False
 
     if (store_information == True):  # If state is to store information then store it
+            print('store')
+            '''
             timestamp = time()
             battery_level = ps.sensors_battery().percent
             power_plugged = int(ps.sensors_battery().power_plugged)
@@ -197,7 +200,8 @@ def callback(indata, frames, call_back, status):
             redis_client.ts().add(mac_address+':battery', timestamp_ms, battery_level)
             redis_client.ts().add(mac_address+':power', timestamp_ms, power_plugged)
             print('Added on Redis')
-
+            '''
+'''
 # Create Redis Client
 redis_client = redis.Redis(host= args.host, \
                            port= args.port,\
@@ -207,6 +211,7 @@ print('Is redis connected? ', redis_client.ping())
 
 
 redis_client.flushdb()
+'''
 
 # Get the mac_address
 mac_address = hex(uuid.getnode())
@@ -216,13 +221,13 @@ print('MAC address: ', mac_address)
 mac_battery = f'{mac_address}:battery_level'
 mac_power = f'{mac_address}:power_plugged'
 try:
-    redis_client.ts().create(mac_battery, uncompressed = False, chunk_size=128)                                                                                        #timeseries for battery level \in [0,100]
-    redis_client.ts().create(mac_power, uncompressed = False, chunk_size=128)                                        
+    pass#redis_client.ts().create(mac_battery, uncompressed = False, chunk_size=128)                                                                                        #timeseries for battery level \in [0,100]
+    #redis_client.ts().create(mac_power, uncompressed = False, chunk_size=128)                                        
 except redis.ResponseError:
     pass
 
 # Obtain the model to integrate
-MODEL_NAME = 'model08'
+MODEL_NAME = 'model_singlelabel'
 
 print('Unzipping the model')
 zipped_model_path = os.path.join('.', f'{MODEL_NAME}.tflite.zip')
