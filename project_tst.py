@@ -175,18 +175,21 @@ def callback(indata, frames, call_back, status):
         interpreter.invoke()
         output = interpreter.get_tensor(output_details[0]['index'])
 
-        # Select predicted label and magnitude
-        top_index = np.argmax(output[0])
-        prediction_magnitude = output[0][top_index]
-        prediction_label = LABELS[top_index]
+        if task == 'singlelabel':
+            # Select predicted label and magnitude
+            top_index = np.argmax(output[0])
+            prediction_magnitude = output[0][top_index]
+            prediction_label = LABELS[top_index]
+            print(f'Prediction: {prediction_label} with magnitude: {prediction_magnitude}')
+        else:
+            mask = output[0] >0.5
+            prediction_magnitude = output[0][mask]
+            prediction_label = np.array(LABELS)[mask]
+            print(list(zip(prediction_label,prediction_magnitude)))
 
-        print(f'Prediction: {prediction_label} with magnitude: {prediction_magnitude}')
 
-        # If prediction magnitude greater the a threshold change the state of the application
-        if (prediction_magnitude > thresh and prediction_label == 'go'):
-            store_information = True
-        elif (prediction_magnitude > thresh and prediction_label == 'stop'):
-            store_information = False
+        
+
 
     if (store_information == True):  # If state is to store information then store it
             print('store')
@@ -226,8 +229,10 @@ try:
 except redis.ResponseError:
     pass
 
+
 # Obtain the model to integrate
-MODEL_NAME = 'model_singlelabel'
+task = 'multilabel'
+MODEL_NAME = f'model_{task}'
 
 print('Unzipping the model')
 zipped_model_path = os.path.join('.', f'{MODEL_NAME}.tflite.zip')
