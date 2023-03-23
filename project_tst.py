@@ -45,7 +45,7 @@ REDIS_PASSWORD = args.password
 '''
 # Parameters for is_silence function
 IS_SILENCE_ARGS = {
-    'downsampling_rate' : 16000,
+    'downsampling_rate' : 44100,
     'frame_length_in_s' : 0.0001,
     'dbFSthres' : -90,
     'duration_thres' : 0.016
@@ -53,7 +53,7 @@ IS_SILENCE_ARGS = {
 
 # Parameters for mfccs function
 PREPROCESSING_MFCCS_ARGS = {
-    'downsampling_rate': 16000,
+    'downsampling_rate': 44100,
     'frame_length_in_s': 0.016,
     'frame_step_in_s': 0.016,
     'num_mel_bins' : 40,
