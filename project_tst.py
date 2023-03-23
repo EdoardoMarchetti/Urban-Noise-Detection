@@ -59,7 +59,7 @@ PREPROCESSING_MFCCS_ARGS = {
     'num_mel_bins' : 40,
     'lower_frequency': 20,
     'upper_frequency': 8000,
-    'num_mfccs_coefficients':10
+    'num_mfccs_coefficients':20
 }
 
 # Prediction threshold
