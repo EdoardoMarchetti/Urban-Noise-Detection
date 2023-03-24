@@ -7,24 +7,24 @@ import json
 
 parser = ArgumentParser()
 
-
 parser.add_argument('--topic',
-help='Zone',
+help='City name',
 type=str,
 required=True)
 
+parser.add_argument('--zone',
+help='Neighbourhood',
+type=str,
+required=True)
+
+
 args = parser.parse_args()
 
-#Client object
+# Client object
 client =  mqtt.Client()
 
 #-----------On connect callback-------------
-def on_connect(
-    client,
-    userdata,
-    flags,
-    rc
-):
+def on_connect(client,userdata,flags,rc):
     """
         When the client is connected to the 
         broker this callback is called.
@@ -39,7 +39,7 @@ client.connect(
     port=1883
 )
 
-print('Sending......Type Ctrl+C to stop')
+print('Sending...... Type Ctrl+C to stop')
 while True: 
     #Get the mac address
     mac_address = hex(uuid.getnode())
@@ -53,7 +53,8 @@ while True:
     payload_dict = {
         'mac_address': mac_address,
         'timestamp':timestamp_in_ms,
-        'label': 'LABEL',
+        'zone': 'Zone', # Da cambiare per la zona contenuta nello script del modello
+        'label': 'LABEL', # Da cambiare per la label che genera l'altro script
     }
     payload = json.dumps(payload_dict)
     #Publish the message

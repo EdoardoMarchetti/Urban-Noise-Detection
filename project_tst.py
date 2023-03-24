@@ -11,6 +11,11 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_io as tfio
 import zipfile
+from argparse import ArgumentParser
+import psutil as ps
+import uuid
+import paho.mqtt.client as mqtt
+import json
 
 print('Import completed')
 #-------------------------START--------------------------------------------
@@ -181,57 +186,35 @@ def callback(indata, frames, call_back, status):
             prediction_magnitude = output[0][top_index]
             prediction_label = LABELS[top_index]
             print(f'Prediction: {prediction_label} with magnitude: {prediction_magnitude}')
+
         else:
-            mask = output[0] >0.5
+            mask = output[0] > 0.5
             prediction_magnitude = output[0][mask]
             prediction_label = np.array(LABELS)[mask]
             print(list(zip(prediction_label,prediction_magnitude)))
-
-
         
 
-
-    if (store_information == True):  # If state is to store information then store it
-            print('store')
-            '''
-            timestamp = time()
-            battery_level = ps.sensors_battery().percent
-            power_plugged = int(ps.sensors_battery().power_plugged)
-            timestamp_ms = int(timestamp * 1000)
-
-            # Addition of the data to the time series
-            redis_client.ts().add(mac_address+':battery', timestamp_ms, battery_level)
-            redis_client.ts().add(mac_address+':power', timestamp_ms, power_plugged)
-            print('Added on Redis')
-            '''
-'''
-# Create Redis Client
-redis_client = redis.Redis(host= args.host, \
-                           port= args.port,\
-                           username= args.user,\
-                           password= args.password)
-print('Is redis connected? ', redis_client.ping())
-
-
-redis_client.flushdb()
-'''
-
-# Get the mac_address
-mac_address = hex(uuid.getnode())
-print('MAC address: ', mac_address)
-
-# Create the timesries_name
-mac_battery = f'{mac_address}:battery_level'
-mac_power = f'{mac_address}:power_plugged'
-try:
-    pass#redis_client.ts().create(mac_battery, uncompressed = False, chunk_size=128)                                                                                        #timeseries for battery level \in [0,100]
-    #redis_client.ts().create(mac_power, uncompressed = False, chunk_size=128)                                        
-except redis.ResponseError:
-    pass
-
+        #Get the mac address
+        mac_address = hex(uuid.getnode())
+        #Prepare the timestamp
+        timestamp = time()
+        timestamp_in_ms = int(timestamp*1000)
+        #Prepare the payload
+        payload_dict = {
+            'mac_address': mac_address,
+            'timestamp':timestamp_in_ms,
+            # Forse anche la zona però no lo sappaimo ancora
+            'label': prediction_label, 
+        }
+        payload = json.dumps(payload_dict)
+        #Publish the message
+        client.publish(
+            topic = 'montevideo', # Da controllare se effetivamente va hardcoded questo
+            payload = payload # message to sent
+        )
 
 # Obtain the model to integrate
-task = 'multilabel'
+task = 'singlelabel'
 MODEL_NAME = f'model_{task}'
 
 print('Unzipping the model')
@@ -248,7 +231,28 @@ interpreter.allocate_tensors()
 print('...script is starting...')
 # State of the application
 store_information = False
-print('Press q+Enter to terminate\n\n\n')
+
+client =  mqtt.Client()
+
+#-----------On connect callback-------------
+def on_connect(client,userdata,flags,rc):
+    """
+        When the client is connected to the 
+        broker this callback is called.
+    """
+    print(f"Connected with result code {str(rc)}")
+    
+client.on_connect = on_connect #band the client to on_connect
+
+#Connect the client to the message broker
+client.connect(
+    host='mqtt.eclipseprojects.io',
+    port=1883
+)
+
+# print('Sending...... Type Ctrl+C to stop')
+
+print('Press q + Enter to terminate\n\n\n')
 
 with sd.InputStream(device=DEVICE,
                     channels=CHANNELS,
