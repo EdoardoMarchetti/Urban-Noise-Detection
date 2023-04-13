@@ -199,19 +199,20 @@ def callback(indata, frames, call_back, status):
         #Prepare the timestamp
         timestamp = time()
         timestamp_in_ms = int(timestamp*1000)
-        #Prepare the payload
-        payload_dict = {
-            'mac_address': mac_address,
-            'timestamp':timestamp_in_ms,
-            # Forse anche la zona però no lo sappaimo ancora
-            'label': prediction_label, 
-        }
-        payload = json.dumps(payload_dict)
-        #Publish the message
-        client.publish(
-            topic = 'montevideo', # Da controllare se effetivamente va hardcoded questo
-            payload = payload # message to sent
-        )
+        #Prepare the payload for each label
+        for label in prediction_label:
+            payload_dict = {
+                'mac_address': mac_address,
+                'timestamp':timestamp_in_ms,
+                # Forse anche la zona però no lo sappaimo ancora
+                'label': label, 
+            }
+            payload = json.dumps(payload_dict)
+            #Publish the message
+            client.publish(
+                topic = 'montevideo', # Da controllare se effetivamente va hardcoded questo
+                payload = payload # message to sent
+            )
 
 # Obtain the model to integrate
 task = 'singlelabel'
