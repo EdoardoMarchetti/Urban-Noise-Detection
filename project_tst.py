@@ -180,18 +180,10 @@ def callback(indata, frames, call_back, status):
         interpreter.invoke()
         output = interpreter.get_tensor(output_details[0]['index'])
 
-        if task == 'singlelabel':
-            # Select predicted label and magnitude
-            top_index = np.argmax(output[0])
-            prediction_magnitude = output[0][top_index]
-            prediction_label = LABELS[top_index]
-            print(f'Prediction: {prediction_label} with magnitude: {prediction_magnitude}')
-
-        else:
-            mask = output[0] > 0.5
-            prediction_magnitude = output[0][mask]
-            prediction_label = np.array(LABELS)[mask]
-            print(list(zip(prediction_label,prediction_magnitude)))
+        mask = output[0] > 0.5
+        prediction_magnitude = output[0][mask]
+        prediction_label = np.array(LABELS)[mask]
+        print(list(zip(prediction_label,prediction_magnitude)))
         
 
         #Get the mac address
@@ -215,8 +207,8 @@ def callback(indata, frames, call_back, status):
             )
 
 # Obtain the model to integrate
-task = 'singlelabel'
-MODEL_NAME = f'model_{task}'
+
+MODEL_NAME = f'model_multilabel'
 
 print('Unzipping the model')
 zipped_model_path = os.path.join('.', f'{MODEL_NAME}.tflite.zip')
